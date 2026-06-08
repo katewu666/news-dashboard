@@ -1,0 +1,50 @@
+HTML
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日財經與玉米期貨精選</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <header class="border-b border-gray-800 bg-gray-950 p-6 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-amber-400">📊 全球財經 & 期貨情報站</h1>
+            <p class="text-sm text-gray-400">自動追蹤台美歐大趨勢與大宗商品動態</p>
+        </div>
+        <div class="bg-gray-800 px-3 py-1.5 rounded text-sm font-mono" id="update-time">載入中...</div>
+    </header>
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <section class="lg:col-span-2 space-y-4">
+            <h2 class="text-xl font-bold border-b border-gray-700 pb-2">🌐 台、美、歐洲重要財經新聞 (限 15 則)</h2>
+            <div id="macro-news" class="space-y-4"></div>
+        </section>
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold text-amber-400 border-b border-gray-700 pb-2">🌽 玉米期貨相關專報 (5 則內)</h2>
+            <div id="corn-news" class="space-y-4"></div>
+        </section>
+    </main>
+    <script>
+        async function loadNews() {
+            try {
+                const res = await fetch('news_data.json');
+                const data = await res.json();
+                document.getElementById('update-time').innerText = `最後更新：${data.updated_at}`;
+                
+                const render = (items, containerId) => {
+                    const el = document.getElementById(containerId);
+                    el.innerHTML = items.length ? items.map(item => `
+                        <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/50 hover:border-gray-600 transition">
+                            <h3 class="text-lg font-medium text-gray-200 hover:text-amber-400"><a href="${item.url}" target="_blank">${item.title}</a></h3>
+                            <p class="text-sm text-gray-400 mt-2 line-clamp-2">${item.description || ''}</p>
+                        </div>
+                    `).join('') : '<p class="text-gray-500">今日暫無新聞。</p>';
+                };
+                render(data.macro_news, 'macro-news');
+                render(data.corn_news, 'corn-news');
+            } catch (e) { document.getElementById('macro-news').innerHTML = '<p class="text-red-400">請先執行一次 Workflow 產生數據檔案。</p>'; }
+        }
+        document.addEventListener('DOMContentLoaded', loadNews);
+    </script>
+</body>
+</html>
